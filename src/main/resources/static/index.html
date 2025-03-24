@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palettes & Symboles</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- WebSocket dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#9795F0',
+                        cardRed: '#FF6B6B',
+                        cardBlue: '#4ECDC4',
+                        cardGreen: '#8FE388',
+                        cardYellow: '#FFD166'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Styles pour l'animation des cartes */
+        .card {
+            transition: all 0.3s ease;
+            backface-visibility: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.played {
+            transform: scale(0.8) rotate(5deg);
+            opacity: 0;
+        }
+
+        .card-symbol {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        /* Support du mode sombre */
+        .dark body {
+            background-color: #181818;
+            color: #fff;
+        }
+
+        .dark .game-board {
+            background-color: #2d2d2d;
+        }
+
+        .dark .card.back {
+            background-color: #333;
+        }
+
+        /* Animation pour l'effet de pioche */
+        @keyframes drawCard {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .draw-animation {
+            animation: drawCard 0.5s ease forwards;
+        }
+
+        /* Animation pour le loader */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader {
+            animation: spin 1s linear infinite;
+        }
+        /* Support pour les langues RTL (arabe) */
+        [dir="rtl"] {
+            text-align: right;
+        }
+
+        [dir="rtl"] .list-disc {
+            padding-right: 1.5rem;
+            padding-left: 0;
+        }
+
+        [dir="rtl"] #rules-button {
+            left: 1rem;
+            right: auto;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+<!-- Sélecteur de langue -->
+<div class="fixed top-4 right-4 z-50">
+    <div class="relative">
+        <button id="language-selector" class="bg-primary text-white px-3 py-1 rounded-lg flex items-center gap-2">
+            <span id="current-language">FR</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+        <div id="language-dropdown" class="absolute right-0 mt-2 w-28 bg-white dark:bg-gray-800 shadow-lg rounded-lg hidden">
+            <button data-lang="fr" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">Français</button>
+            <button data-lang="en" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">English</button>
+            <button data-lang="ar" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">العربية</button>
+        </div>
+    </div>
+</div>
+
+<!-- Écran d'accueil -->
+<div id="home-screen" class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 class="text-3xl font-bold text-center text-primary mb-6">Palettes & Symboles</h1>
+
+        <div class="space-y-4">
+            <button id="create-game" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+                Créer une partie
+            </button>
+
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+                <div class="relative flex justify-center">
+                    <span class="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">ou</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Rejoindre une partie</label>
+                <div class="flex items-center">
+                    <input id="join-code" type="text" class="w-full px-4 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base" placeholder="Code de partie">
+                    <button id="join-game" class="bg-primary text-white px-4 py-2 rounded-r-lg font-semibold hover:bg-opacity-90 transition-all">
+                        Rejoindre
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Écran de configuration -->
+<div id="setup-screen" class="hidden container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 class="text-3xl font-bold text-center text-primary mb-6">Nouvelle partie</h1>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre de joueurs</label>
+            <select id="player-count" class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base">
+                <option value="2">2 joueurs</option>
+                <option value="3">3 joueurs</option>
+                <option value="4">4 joueurs</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Votre nom</label>
+            <input type="text" id="player-name" class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base" placeholder="Votre nom">
+        </div>
+
+        <button id="create-game-btn" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+            Créer la partie
+        </button>
+
+        <button id="back-to-home" class="w-full mt-4 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+            Retour
+        </button>
+    </div>
+</div>
+
+<!-- Écran d'attente -->
+<div id="waiting-screen" class="hidden container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 class="text-3xl font-bold text-center text-primary mb-6">En attente des joueurs</h1>
+
+        <div class="mb-6">
+            <p class="text-gray-700 dark:text-gray-300 mb-2">Partagez ce code avec vos amis pour qu'ils puissent rejoindre la partie :</p>
+            <div id="game-code" class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center font-mono text-lg mb-2"></div>
+            <div class="flex justify-center">
+                <button id="copy-code" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+                    Copier le code
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2 text-primary">Joueurs</h2>
+            <ul id="player-list" class="space-y-2"></ul>
+        </div>
+
+        <button id="start-game-btn" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all" disabled>
+            Commencer la partie (en attente de joueurs)
+        </button>
+
+        <button id="cancel-game" class="w-full mt-4 bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+            Annuler la partie
+        </button>
+    </div>
+</div>
+
+<!-- Écran de jeu -->
+<div id="game-screen" class="hidden container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl md:text-2xl font-bold text-primary">Palettes & Symboles</h1>
+        <div id="current-player" class="px-3 py-1 bg-primary text-white rounded-lg text-sm md:text-base font-medium"></div>
+    </div>
+
+    <!-- Zone avec les informations de partie -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 mb-4">
+        <div class="flex flex-wrap justify-between items-center gap-2">
+            <div>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Tour:</span>
+                <span id="turn-counter" class="ml-1 font-bold">1</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Joueur:</span>
+                <span id="player-indicator" class="ml-1 font-bold">Vous</span>
+            </div>
+            <div id="game-id-display">
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">ID partie:</span>
+                <span id="game-id" class="ml-1 font-mono text-xs md:text-sm"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zone centrale avec le paquet et les cartes jouées -->
+    <div class="game-board bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 mb-4">
+        <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+            <div id="deck" class="card back w-16 h-24 md:w-20 md:h-32 bg-primary rounded-lg shadow-md flex items-center justify-center cursor-pointer">
+                <span class="text-white font-bold text-sm md:text-base">Pioche</span>
+            </div>
+            <div id="center-cards" class="flex flex-wrap justify-center gap-2 md:gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Mains des joueurs -->
+    <div id="players-container"></div>
+
+    <!-- Message de notification -->
+    <div id="notification" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 py-2 px-4 rounded-lg shadow-lg hidden z-40">
+        <p class="text-center text-gray-800 dark:text-gray-200"></p>
+    </div>
+
+    <!-- Écran de fin de partie -->
+    <div id="game-over" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full">
+            <h2 class="text-2xl font-bold text-center mb-4 text-primary">Partie terminée!</h2>
+            <p id="winner-text" class="text-xl text-center mb-6"></p>
+            <button id="back-to-home-from-game" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+                Retour à l'accueil
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de sélection de couleur -->
+<div id="color-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-xs w-full">
+        <h3 class="text-xl font-bold mb-4 text-center text-primary">Choisissez une couleur</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-cardRed h-20 rounded-lg cursor-pointer color-choice" data-color="cardRed"></div>
+            <div class="bg-cardBlue h-20 rounded-lg cursor-pointer color-choice" data-color="cardBlue"></div>
+            <div class="bg-cardGreen h-20 rounded-lg cursor-pointer color-choice" data-color="cardGreen"></div>
+            <div class="bg-cardYellow h-20 rounded-lg cursor-pointer color-choice" data-color="cardYellow"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Règles du jeu -->
+<div id="rules-button" class="fixed bottom-4 right-4 bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg cursor-pointer">
+    <span class="text-xl">?</span>
+</div>
+
+<div id="rules-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto" id="rules-content">
+        <!-- Le contenu sera injecté dynamiquement en fonction de la langue -->
+    </div>
+    <button id="close-rules" class="mt-6 w-full bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+        Fermer
+    </button>
+</div>
+
+<!-- Overlay de chargement -->
+<div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div class="text-center">
+        <div class="loader w-16 h-16 border-4 border-t-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p class="text-white text-lg" id="loading-text">Chargement...</p>
+    </div>
+</div>
+
+<script>
+    const translations = {
+        fr: {
+            title: "Règles du jeu",
+            rules: [
+                "Chaque joueur reçoit 5 cartes au début de la partie",
+                "Le plateau central affiche 4 cartes face visible",
+                "À votre tour, vous devez poser une carte qui correspond soit à la couleur, soit au symbole d'une carte du plateau",
+                "Si vous ne pouvez pas jouer, cliquez sur la pioche pour tirer une nouvelle carte",
+                "Le premier joueur qui se débarrasse de toutes ses cartes gagne la partie"
+            ],
+            specialCards: "Cartes spéciales:",
+            specialCardsRules: [
+                "★ (étoile): Le joueur suivant pioche 2 cartes",
+                "✦ (étoile vide): Le joueur suivant passe son tour",
+                "◉ (cercle plein): Change le sens du jeu",
+                "⬠ (losange): Choisissez la couleur de la prochaine carte"
+            ],
+            closeButton: "Fermer"
+        },
+        en: {
+            title: "Game Rules",
+            rules: [
+                "Each player receives 5 cards at the beginning of the game",
+                "The central board displays 4 face-up cards",
+                "On your turn, you must play a card that matches either the color or symbol of a card on the board",
+                "If you cannot play, click on the deck to draw a new card",
+                "The first player to get rid of all their cards wins the game"
+            ],
+            specialCards: "Special Cards:",
+            specialCardsRules: [
+                "★ (star): The next player draws 2 cards",
+                "✦ (empty star): The next player skips their turn",
+                "◉ (filled circle): Changes the direction of play",
+                "⬠ (diamond): Choose the color for the next card"
+            ],
+            closeButton: "Close"
+        },
+        ar: {
+            title: "قواعد اللعبة",
+            rules: [
+                "يتلقى كل لاعب 5 بطاقات في بداية اللعبة",
+                "تعرض اللوحة المركزية 4 بطاقات مكشوفة",
+                "في دورك، يجب عليك لعب بطاقة تتطابق إما مع لون أو رمز بطاقة على اللوحة",
+                "إذا لم تتمكن من اللعب، انقر على الرزمة لسحب بطاقة جديدة",
+                "اللاعب الأول الذي يتخلص من جميع بطاقاته يفوز باللعبة"
+            ],
+            specialCards: "البطاقات الخاصة:",
+            specialCardsRules: [
+                "★ (نجمة): يسحب اللاعب التالي بطاقتين",
+                "✦ (نجمة فارغة): يتخطى اللاعب التالي دوره",
+                "◉ (دائرة ممتلئة): تغيير اتجاه اللعب",
+                "⬠ (معين): اختر اللون للبطاقة التالية"
+            ],
+            closeButton: "إغلاق"
+        }
+    };
+    // Vérification du mode sombre
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        if (event.matches) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    });
+
+    // Configuration des WebSockets
+    let socket = null;
+    let stompClient = null;
+    let gameSubscription = null;
+
+    // Variables globales
+    const playerId = generateId();
+    let playerName = "";
+    let gameId = null;
+    let isCreator = false;
+    let isYourTurn = false;
+    let currentGameState = null;
+
+    // Constantes
+    const COLORS = ['cardRed', 'cardBlue', 'cardGreen', 'cardYellow'];
+    const SYMBOLS = ['★', '✦', '◉', '⬠', '△', '▢', '◇', '○'];
+    const SPECIAL_CARDS = {
+        '★': 'draw-two',
+        '✦': 'skip',
+        '◉': 'reverse',
+        '⬠': 'color-picker'
+    };
+
+    // Fonction pour générer un ID unique
+    function generateId() {
+        // Vérifier si on a déjà un ID stocké
+        const storedId = localStorage.getItem('palettes_symbols_player_id');
+        if (storedId) {
+            return storedId;
+        }
+
+        // Sinon, générer un nouvel ID et le stocker
+        const newId = Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('palettes_symbols_player_id', newId);
+        return newId;
+    }
+
+    // Navigation entre les écrans
+    function showScreen(screenId) {
+        document.querySelectorAll('body > div[id$="-screen"]').forEach(screen => {
+            screen.classList.add('hidden');
+        });
+        document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // Affichage d'une notification
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.querySelector('p').textContent = message;
+        notification.classList.remove('hidden');
+
+        setTimeout(() => {
+            notification.classList.add('hidden');
+        }, 2000);
+    }
+
+    // Affichage du chargement
+    function showLoading(text = "Chargement...") {
+        document.getElementById('loading-text').textContent = text;
+        document.getElementById('loading-overlay').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        document.getElementById('loading-overlay').classList.add('hidden');
+    }
+
+    // Connexion WebSocket
+    function connectWebSocket(callback) {
+        showLoading("Connexion au serveur...");
+
+        socket = new SockJS('/ws-palettes-symboles');
+        stompClient = Stomp.over(socket);
+
+        // Désactiver les logs de STOMP
+        stompClient.debug = null;
+
+        stompClient.connect({}, frame => {
+            console.log('Connecté: ' + frame);
+            hideLoading();
+            if (callback) callback();
+        }, error => {
+            console.error('Erreur de connexion:', error);
+            hideLoading();
+            showNotification("Erreur de connexion au serveur. Veuillez réessayer.");
+        });
+    }
+
+    // Déconnexion WebSocket
+    function disconnectWebSocket() {
+        if (stompClient && stompClient.connected) {
+            if (gameSubscription) {
+                gameSubscription.unsubscribe();
+                gameSubscription = null;
+            }
+            stompClient.disconnect();
+        }
+    }
+
+    // S'abonner aux mises à jour de la partie
+    function subscribeToGame(gameId) {
+        if (stompClient && stompClient.connected) {
+            if (gameSubscription) {
+                gameSubscription.unsubscribe();
+            }
+
+            // S'abonner au topic personnel pour ce joueur
+            gameSubscription = stompClient.subscribe(`/topic/game/${gameId}/player/${playerId}`, response => {
+                const gameState = JSON.parse(response.body);
+                updateGameState(gameState);
+            });
+
+            // S'abonner aux messages d'erreur
+            stompClient.subscribe(`/topic/game/${gameId}/player/${playerId}/error`, response => {
+                const errorData = JSON.parse(response.body);
+                showNotification(errorData.message);
+            });
+        }
+    }
+
+    // Cette fonction est appelée lorsqu'on reçoit un état général du jeu (sans cartes)
+    function updateGeneralGameState(gameState) {
+        // Mettre à jour les informations de base
+        document.getElementById('turn-counter').textContent = gameState.turnCounter;
+        document.getElementById('game-id').textContent = gameState.gameId;
+
+        // Trouver votre joueur
+        const yourPlayer = gameState.players.find(player => player.id === playerId);
+        if (!yourPlayer) {
+            showNotification("Vous n'êtes plus dans la partie!");
+            return;
+        }
+
+        // Vérifier si c'est votre tour
+        isYourTurn = gameState.players[gameState.currentPlayerIndex].id === playerId;
+
+        // Mise à jour du joueur actuel
+        const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        document.getElementById('current-player').textContent = `Tour de: ${currentPlayer.name}`;
+        document.getElementById('player-indicator').textContent = isYourTurn ? "Vous" : currentPlayer.name;
+
+        // Mise à jour des cartes centrales
+        renderCenterCards(gameState.centerCards);
+
+        // Ne pas mettre à jour les mains des joueurs car nous n'avons pas les cartes
+        // Demander à la place un état personnalisé
+        fetch(`/api/games/${gameState.gameId}/player/${playerId}`)
+            .then(response => response.json())
+            .then(personalState => {
+                // Mettre à jour uniquement les mains des joueurs
+                renderPlayersHands(personalState.players, personalState.currentPlayerIndex);
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+
+        // Si la partie est en attente (écran d'attente)
+        if (!gameState.gameStarted) {
+            updatePlayerList(gameState.players);
+            showScreen('waiting-screen');
+        } else if (document.getElementById('waiting-screen').classList.contains('hidden') === false) {
+            // Si on est sur l'écran d'attente mais que la partie a commencé
+            showScreen('game-screen');
+        }
+    }
+
+    // Mise à jour de l'état du jeu
+    function updateGameState(gameState) {
+        currentGameState = gameState;
+
+        // Si la partie vient de commencer, demander l'état du jeu personnalisé
+        if (gameState.gameStarted &&
+            document.getElementById('waiting-screen').classList.contains('hidden') === false) {
+            // Demander l'état du jeu personnalisé
+            fetch(`/api/games/${gameState.gameId}/player/${playerId}`)
+                .then(response => response.json())
+                .then(personalGameState => {
+                    // Mettre à jour l'affichage avec l'état personnalisé
+                    updateGameDisplay(personalGameState);
+                    // Passer à l'écran de jeu
+                    showScreen('game-screen');
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification("Erreur lors de la récupération de l'état du jeu");
+                });
+            return;
+        }
+
+        // Sinon, mettre à jour l'affichage normalement
+        updateGameDisplay(gameState);
+    }
+
+    // Extraire la logique d'affichage dans une fonction séparée
+    function updateGameDisplay(gameState) {
+        // Mise à jour des informations de base
+        document.getElementById('turn-counter').textContent = gameState.turnCounter;
+        document.getElementById('game-id').textContent = gameState.gameId;
+
+        // Trouver votre joueur
+        const yourPlayer = gameState.players.find(player => player.id === playerId);
+        if (!yourPlayer) {
+            showNotification("Vous n'êtes plus dans la partie!");
+            return;
+        }
+
+        // Vérifier si c'est votre tour
+        isYourTurn = gameState.players[gameState.currentPlayerIndex].id === playerId;
+
+        // Mise à jour du joueur actuel
+        const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        document.getElementById('current-player').textContent = `Tour de: ${currentPlayer.name}`;
+        document.getElementById('player-indicator').textContent = isYourTurn ? "Vous" : currentPlayer.name;
+
+        // Mise à jour des cartes centrales
+        renderCenterCards(gameState.centerCards);
+
+        // Mise à jour des mains des joueurs
+        renderPlayersHands(gameState.players, gameState.currentPlayerIndex);
+
+        // Vérifier si la partie est terminée
+        if (gameState.gameFinished && gameState.winnerId) {
+            const winner = gameState.players.find(player => player.id === gameState.winnerId);
+            showGameOver(winner ? winner.name : "Un joueur");
+        }
+
+        // Si la partie est en attente (écran d'attente)
+        if (!gameState.gameStarted) {
+            updatePlayerList(gameState.players);
+            showScreen('waiting-screen');
+        }
+    }
+
+    // Création d'un élément carte
+    function createCardElement(card) {
+        const cardElement = document.createElement('div');
+        cardElement.className = `card w-16 h-24 md:w-20 md:h-32 bg-${card.color} text-white rounded-lg shadow-md flex flex-col items-center justify-between p-2`;
+        cardElement.dataset.color = card.color;
+        cardElement.dataset.symbol = card.symbol;
+
+        cardElement.innerHTML = `
+                <span class="text-sm md:text-lg">${card.symbol}</span>
+                <span class="card-symbol">${card.symbol}</span>
+                <span class="text-sm md:text-lg">${card.symbol}</span>
+            `;
+
+        return cardElement;
+    }
+
+    // Affichage des cartes centrales
+    function renderCenterCards(centerCards) {
+        const centerCardsContainer = document.getElementById('center-cards');
+        centerCardsContainer.innerHTML = '';
+
+        for (const card of centerCards) {
+            const cardElement = createCardElement(card);
+            centerCardsContainer.appendChild(cardElement);
+        }
+    }
+
+    // Affichage des mains des joueurs
+    function renderPlayersHands(players, currentPlayerIndex) {
+        const container = document.getElementById('players-container');
+        container.innerHTML = '';
+
+        // Regrouper les joueurs par ID pour éviter les doublons
+        const uniquePlayers = {};
+        players.forEach(player => {
+            // Si le joueur existe déjà et a des cartes, on garde cette version
+            if (!uniquePlayers[player.id] || (player.cards && player.cards.length > 0)) {
+                uniquePlayers[player.id] = player;
+            }
+        });
+
+        // Convertir en tableau pour l'affichage
+        const playersToRender = Object.values(uniquePlayers);
+
+        for (let i = 0; i < playersToRender.length; i++) {
+            const player = playersToRender[i];
+            const originalIndex = players.findIndex(p => p.id === player.id);
+            const isCurrentPlayer = originalIndex === currentPlayerIndex;
+            const isYou = player.id === playerId;
+
+            console.log(`Joueur ${player.name}:`, player.id, "isYou:", isYou, "cards:", player.cards ? player.cards.length : 0);
+
+            const playerElement = document.createElement('div');
+            playerElement.className = `player-hand mb-3 p-3 rounded-lg ${isCurrentPlayer ? 'bg-primary bg-opacity-10' : 'bg-white dark:bg-gray-800'} shadow-md`;
+
+            const nameElement = document.createElement('div');
+            nameElement.className = 'font-semibold mb-2 flex justify-between items-center';
+            nameElement.innerHTML = `
+                    <span>${player.name} ${isYou ? '(Vous)' : ''}</span>
+                    <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">${player.cardCount} cartes</span>
+                `;
+
+            const cardsContainer = document.createElement('div');
+            cardsContainer.className = 'flex flex-wrap gap-2 justify-center';
+
+            // Affichage des cartes du joueur
+            if (isYou && player.cards && player.cards.length > 0) {
+                for (let j = 0; j < player.cards.length; j++) {
+                    const card = player.cards[j];
+                    const cardElement = createCardElement(card);
+
+                    // Ajouter la possibilité de jouer seulement pour le joueur actuel si c'est son tour
+                    if (isYou && isCurrentPlayer) {
+                        cardElement.classList.add('cursor-pointer', 'hover:scale-105', 'transition-transform');
+                        cardElement.addEventListener('click', function() {
+                            playCard(j);
+                        });
+                    }
+
+                    cardsContainer.appendChild(cardElement);
+                }
+            } else {
+                // Cartes cachées pour les autres joueurs
+                for (let j = 0; j < player.cardCount; j++) {
+                    const cardBack = document.createElement('div');
+                    cardBack.className = 'card back w-16 h-24 md:w-20 md:h-32 bg-gray-500 dark:bg-gray-700 rounded-lg shadow-md flex items-center justify-center';
+                    cardBack.innerHTML = '<span class="text-white font-bold text-xs md:text-sm">Carte</span>';
+                    cardsContainer.appendChild(cardBack);
+                }
+            }
+
+            playerElement.appendChild(nameElement);
+            playerElement.appendChild(cardsContainer);
+            container.appendChild(playerElement);
+        }
+    }
+
+    // Jouer une carte
+    function playCard(cardIndex) {
+        if (!isYourTurn) {
+            showNotification("Ce n'est pas votre tour!");
+            return;
+        }
+
+        stompClient.send(`/app/game/${gameId}/play-card`, {},
+            JSON.stringify({playerId: playerId, cardIndex: cardIndex})
+        );
+    }
+
+    // Piocher une carte
+    function drawCard() {
+        if (!isYourTurn) {
+            showNotification("Ce n'est pas votre tour!");
+            return;
+        }
+
+        stompClient.send(`/app/game/${gameId}/draw-card`, {},
+            JSON.stringify({playerId: playerId})
+        );
+    }
+
+    // Choisir une couleur
+    function chooseColor(color) {
+        if (!isYourTurn) {
+            showNotification("Ce n'est pas votre tour!");
+            return;
+        }
+
+        stompClient.send(`/app/game/${gameId}/choose-color`, {},
+            JSON.stringify({playerId: playerId, color: color})
+        );
+
+        document.getElementById('color-modal').classList.add('hidden');
+    }
+
+    // Affichage de la fin de partie
+    function showGameOver(winnerName) {
+        document.getElementById('winner-text').textContent = `${winnerName} a gagné la partie!`;
+        document.getElementById('game-over').classList.remove('hidden');
+    }
+
+    // Mise à jour de la liste des joueurs dans l'écran d'attente
+    function updatePlayerList(players) {
+        const playerList = document.getElementById('player-list');
+        playerList.innerHTML = '';
+
+        let connectedCount = 0;
+
+        for (const player of players) {
+            if (player.id) connectedCount++;
+
+            const playerItem = document.createElement('li');
+            playerItem.className = 'flex items-center space-x-2';
+            playerItem.innerHTML = `
+                    <span class="w-3 h-3 rounded-full ${player.id ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}"></span>
+                    <span>${player.name} ${player.creator ? '(Créateur)' : ''} ${player.id === playerId ? '(Vous)' : ''}</span>
+                `;
+            playerList.appendChild(playerItem);
+        }
+
+        // Mettre à jour le bouton de démarrage
+        const startButton = document.getElementById('start-game-btn');
+        if (isCreator && connectedCount >= 2) {
+            startButton.disabled = false;
+            startButton.textContent = 'Commencer la partie';
+        } else {
+            startButton.disabled = true;
+            startButton.textContent = `En attente de joueurs (${connectedCount}/${players.length})`;
+        }
+    }
+
+    // === Event Listeners ===
+
+    // Événements pour l'écran d'accueil
+    document.getElementById('create-game').addEventListener('click', function() {
+        showScreen('setup-screen');
+    });
+
+    document.getElementById('join-game').addEventListener('click', function() {
+        const code = document.getElementById('join-code').value.trim();
+        if (!code) {
+            showNotification("Veuillez entrer un code de partie");
+            return;
+        }
+
+        showLoading("Recherche de la partie...");
+
+        // Appel à l'API pour récupérer les détails de la partie
+        fetch(`/api/games/${code}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Partie non trouvée');
+                }
+                return response.json();
+            })
+            .then(gameData => {
+                gameId = gameData.id;
+
+                // Demander le nom du joueur
+                const playerName = prompt("Entrez votre nom pour rejoindre la partie:", "");
+                if (!playerName) {
+                    hideLoading();
+                    return;
+                }
+
+                // Connexion WebSocket
+                connectWebSocket(() => {
+                    // Rejoindre la partie
+                    subscribeToGame(gameId);
+
+                    stompClient.send(`/app/game/${gameId}/join`, {},
+                        JSON.stringify({id: playerId, name: playerName})
+                    );
+                });
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                hideLoading();
+                showNotification("Partie non trouvée ou erreur de connexion");
+            });
+    });
+
+    // Événements pour l'écran de configuration
+    document.getElementById('back-to-home').addEventListener('click', function() {
+        showScreen('home-screen');
+    });
+
+    document.getElementById('create-game-btn').addEventListener('click', function() {
+        const playerCount = parseInt(document.getElementById('player-count').value);
+        playerName = document.getElementById('player-name').value.trim() || "Joueur 1";
+
+        if (!playerName) {
+            showNotification("Veuillez entrer votre nom");
+            return;
+        }
+
+        showLoading("Création de la partie...");
+
+        // Appel à l'API pour créer une partie
+        fetch(`/api/games`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                creatorId: playerId,
+                creatorName: playerName,
+                playerCount: playerCount
+            }),
+        })
+            .then(response => response.json())
+            .then(gameData => {
+                gameId = gameData.id;
+                isCreator = true;
+
+                // Afficher le code de partie
+                document.getElementById('game-code').textContent = gameId;
+
+                // Connexion WebSocket
+                connectWebSocket(() => {
+                    // S'abonner aux mises à jour de la partie
+                    subscribeToGame(gameId);
+
+                    showScreen('waiting-screen');
+                });
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                hideLoading();
+                showNotification("Erreur lors de la création de la partie");
+            });
+    });
+
+    // Événements pour l'écran d'attente
+    document.getElementById('copy-code').addEventListener('click', function() {
+        const code = document.getElementById('game-code').textContent;
+
+        navigator.clipboard.writeText(code)
+            .then(() => {
+                showNotification("Code copié dans le presse-papier!");
+            })
+            .catch(err => {
+                showNotification("Erreur lors de la copie: " + err);
+            });
+    });
+
+    document.getElementById('cancel-game').addEventListener('click', function() {
+        disconnectWebSocket();
+        showScreen('home-screen');
+    });
+
+    document.getElementById('start-game-btn').addEventListener('click', function() {
+        if (this.disabled) return;
+
+        stompClient.send(`/app/game/${gameId}/start`, {},
+            JSON.stringify({playerId: playerId})
+        );
+    });
+
+    // Événements pour l'écran de jeu
+    document.getElementById('deck').addEventListener('click', function() {
+        drawCard();
+    });
+
+    document.getElementById('back-to-home-from-game').addEventListener('click', function() {
+        disconnectWebSocket();
+        showScreen('home-screen');
+    });
+
+    // Événements pour la modal de couleur
+    document.querySelectorAll('.color-choice').forEach(choice => {
+        choice.addEventListener('click', function() {
+            chooseColor(this.dataset.color);
+        });
+    });
+
+    // Affichage/masquage des règles
+    document.getElementById('rules-button').addEventListener('click', function() {
+        document.getElementById('rules-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('close-rules').addEventListener('click', function() {
+        document.getElementById('rules-modal').classList.add('hidden');
+    });
+    // Variables pour la gestion des langues
+    let currentLanguage = 'fr'; // Langue par défaut
+
+    // Détection de la langue du navigateur
+    function detectBrowserLanguage() {
+        const language = navigator.language || navigator.userLanguage;
+        const lang = language.substring(0, 2).toLowerCase();
+
+        // Vérifier si la langue est supportée
+        if (translations[lang]) {
+            return lang;
+        }
+        return 'fr'; // Français par défaut
+    }
+
+    // Mise à jour du contenu des règles
+    function updateRulesContent() {
+        const translation = translations[currentLanguage];
+        const rulesContent = document.getElementById('rules-content');
+
+        // Pour le support de l'arabe (direction de texte de droite à gauche)
+        rulesContent.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+
+        // Création du contenu HTML
+        let html = `
+        <h2 class="text-2xl font-bold mb-4 text-primary">${translation.title}</h2>
+        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+    `;
+
+        // Ajout des règles principales
+        translation.rules.forEach(rule => {
+            html += `<li>${rule}</li>`;
+        });
+
+        // Ajout des règles de cartes spéciales
+        html += `
+        <li>${translation.specialCards}
+            <ul class="list-disc pl-6 mt-2">
+    `;
+
+        translation.specialCardsRules.forEach(rule => {
+            html += `<li>${rule}</li>`;
+        });
+
+        html += `
+            </ul>
+        </li>
+    </ul>
+    <button id="close-rules" class="mt-6 w-full bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+        ${translation.closeButton}
+    </button>
+    `;
+
+        rulesContent.innerHTML = html;
+
+        // Réattacher l'événement pour fermer les règles
+        document.getElementById('close-rules').addEventListener('click', function() {
+            document.getElementById('rules-modal').classList.add('hidden');
+        });
+    }
+
+    // Initialisation de la langue
+    function initializeLanguage() {
+        // Essayer de récupérer la langue sauvegardée
+        const savedLanguage = localStorage.getItem('preferred_language');
+
+        if (savedLanguage && translations[savedLanguage]) {
+            currentLanguage = savedLanguage;
+        } else {
+            currentLanguage = detectBrowserLanguage();
+        }
+
+        // Mettre à jour l'indicateur de langue
+        document.getElementById('current-language').textContent = currentLanguage.toUpperCase();
+
+        // Mettre à jour les règles
+        updateRulesContent();
+    }
+
+    // Événements pour le sélecteur de langue
+    document.getElementById('language-selector').addEventListener('click', function() {
+        document.getElementById('language-dropdown').classList.toggle('hidden');
+    });
+
+    // Fermer le dropdown si on clique ailleurs
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('#language-selector') && !event.target.closest('#language-dropdown')) {
+            document.getElementById('language-dropdown').classList.add('hidden');
+        }
+    });
+
+    // Événements pour les options de langue
+    document.querySelectorAll('.language-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const lang = this.dataset.lang;
+            if (translations[lang]) {
+                currentLanguage = lang;
+                localStorage.setItem('preferred_language', lang);
+                document.getElementById('current-language').textContent = lang.toUpperCase();
+                updateRulesContent();
+                document.getElementById('language-dropdown').classList.add('hidden');
+            }
+        });
+    });
+
+    // Remplacer l'ancien événement d'ouverture des règles
+    document.getElementById('rules-button').addEventListener('click', function() {
+        updateRulesContent(); // S'assurer que le contenu est à jour
+        document.getElementById('rules-modal').classList.remove('hidden');
+    });
+
+    // Initialiser la langue au chargement de la page
+    document.addEventListener('DOMContentLoaded', initializeLanguage);
+</script>
+</body>
+</html>
