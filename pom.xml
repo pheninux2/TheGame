@@ -161,6 +161,15 @@
                     <argLine>--enable-preview</argLine>
                 </configuration>
             </plugin>
+            <!-- Ajout de la configuration du plugin maven-resources-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
