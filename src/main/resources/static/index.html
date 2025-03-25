@@ -66,8 +66,14 @@
 
         /* Animation pour l'effet de pioche */
         @keyframes drawCard {
-            0% { transform: translateY(-50px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .draw-animation {
@@ -76,13 +82,18 @@
 
         /* Animation pour le loader */
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .loader {
             animation: spin 1s linear infinite;
         }
+
         /* Support pour les langues RTL (arabe) */
         [dir="rtl"] {
             text-align: right;
@@ -101,30 +112,34 @@
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
-<!-- Sélecteur de langue -->
-<div class="fixed top-4 right-4 z-50">
-    <div class="relative">
-        <button id="language-selector" class="bg-primary text-white px-3 py-1 rounded-lg flex items-center gap-2">
-            <span id="current-language">FR</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-        </button>
-        <div id="language-dropdown" class="absolute right-0 mt-2 w-28 bg-white dark:bg-gray-800 shadow-lg rounded-lg hidden">
-            <button data-lang="fr" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">Français</button>
-            <button data-lang="en" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">English</button>
-            <button data-lang="ar" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">العربية</button>
-        </div>
-    </div>
+
+<!-- Sélecteur de langue en bas à gauche -->
+<div id="language-button"
+     class="fixed bottom-4 left-4 bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg cursor-pointer z-50">
+    <span id="current-language" class="text-lg font-bold">FR</span>
+</div>
+
+<div id="language-dropdown"
+     class="fixed bottom-20 left-4 w-36 bg-white dark:bg-gray-800 shadow-lg rounded-lg hidden z-50">
+    <button data-lang="fr" class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">
+        Français
+    </button>
+    <button data-lang="en" class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 language-option">
+        English
+    </button>
+    <button data-lang="ar"
+            class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 language-option rtl">العربية
+    </button>
 </div>
 
 <!-- Écran d'accueil -->
 <div id="home-screen" class="container mx-auto px-4 py-8">
     <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h1 class="text-3xl font-bold text-center text-primary mb-6">Palettes & Symboles</h1>
+        <h1 class="text-3xl font-bold text-center text-primary mb-6" id="app-title">Palettes & Symboles</h1>
 
         <div class="space-y-4">
-            <button id="create-game" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+            <button id="create-game"
+                    class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
                 Créer une partie
             </button>
 
@@ -133,15 +148,19 @@
                     <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
                 </div>
                 <div class="relative flex justify-center">
-                    <span class="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">ou</span>
+                    <span class="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400" id="or-text">ou</span>
                 </div>
             </div>
 
             <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Rejoindre une partie</label>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" id="join-game-label">Rejoindre une
+                    partie</label>
                 <div class="flex items-center">
-                    <input id="join-code" type="text" class="w-full px-4 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base" placeholder="Code de partie">
-                    <button id="join-game" class="bg-primary text-white px-4 py-2 rounded-r-lg font-semibold hover:bg-opacity-90 transition-all">
+                    <input id="join-code" type="text"
+                           class="w-full px-4 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base"
+                           placeholder="Code de partie">
+                    <button id="join-game"
+                            class="bg-primary text-white px-4 py-2 rounded-r-lg font-semibold hover:bg-opacity-90 transition-all">
                         Rejoindre
                     </button>
                 </div>
@@ -153,27 +172,32 @@
 <!-- Écran de configuration -->
 <div id="setup-screen" class="hidden container mx-auto px-4 py-8">
     <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h1 class="text-3xl font-bold text-center text-primary mb-6">Nouvelle partie</h1>
+        <h1 class="text-3xl font-bold text-center text-primary mb-6" id="new-game-title">Nouvelle partie</h1>
 
         <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre de joueurs</label>
-            <select id="player-count" class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base">
-                <option value="2">2 joueurs</option>
-                <option value="3">3 joueurs</option>
-                <option value="4">4 joueurs</option>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2" id="player-count-label">Nombre de joueurs</label>
+            <select id="player-count"
+                    class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base">
+                <option value="2" id="two-players">2 joueurs</option>
+                <option value="3" id="three-players">3 joueurs</option>
+                <option value="4" id="four-players">4 joueurs</option>
             </select>
         </div>
 
         <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Votre nom</label>
-            <input type="text" id="player-name" class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base" placeholder="Votre nom">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2" id="your-name-label">Votre nom</label>
+            <input type="text" id="player-name"
+                   class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-base"
+                   placeholder="Votre nom">
         </div>
 
-        <button id="create-game-btn" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+        <button id="create-game-btn"
+                class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
             Créer la partie
         </button>
 
-        <button id="back-to-home" class="w-full mt-4 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+        <button id="back-to-home"
+                class="w-full mt-4 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
             Retour
         </button>
     </div>
@@ -182,28 +206,34 @@
 <!-- Écran d'attente -->
 <div id="waiting-screen" class="hidden container mx-auto px-4 py-8">
     <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h1 class="text-3xl font-bold text-center text-primary mb-6">En attente des joueurs</h1>
+        <h1 class="text-3xl font-bold text-center text-primary mb-6" id="waiting-title">En attente des joueurs</h1>
 
         <div class="mb-6">
-            <p class="text-gray-700 dark:text-gray-300 mb-2">Partagez ce code avec vos amis pour qu'ils puissent rejoindre la partie :</p>
-            <div id="game-code" class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center font-mono text-lg mb-2"></div>
+            <p class="text-gray-700 dark:text-gray-300 mb-2" id="share-code-text">Partagez ce code avec vos amis pour
+                qu'ils puissent rejoindre la partie :</p>
+            <div id="game-code"
+                 class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center font-mono text-lg mb-2"></div>
             <div class="flex justify-center">
-                <button id="copy-code" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+                <button id="copy-code"
+                        class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
                     Copier le code
                 </button>
             </div>
         </div>
 
         <div class="mb-6">
-            <h2 class="text-xl font-semibold mb-2 text-primary">Joueurs</h2>
+            <h2 class="text-xl font-semibold mb-2 text-primary" id="players-title">Joueurs</h2>
             <ul id="player-list" class="space-y-2"></ul>
         </div>
 
-        <button id="start-game-btn" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all" disabled>
+        <button id="start-game-btn"
+                class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all"
+                disabled>
             Commencer la partie (en attente de joueurs)
         </button>
 
-        <button id="cancel-game" class="w-full mt-4 bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+        <button id="cancel-game"
+                class="w-full mt-4 bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
             Annuler la partie
         </button>
     </div>
@@ -212,23 +242,24 @@
 <!-- Écran de jeu -->
 <div id="game-screen" class="hidden container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-4">
-        <h1 class="text-xl md:text-2xl font-bold text-primary">Palettes & Symboles</h1>
-        <div id="current-player" class="px-3 py-1 bg-primary text-white rounded-lg text-sm md:text-base font-medium"></div>
+        <h1 class="text-xl md:text-2xl font-bold text-primary" id="game-title">Palettes & Symboles</h1>
+        <div id="current-player"
+             class="px-3 py-1 bg-primary text-white rounded-lg text-sm md:text-base font-medium"></div>
     </div>
 
     <!-- Zone avec les informations de partie -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 mb-4">
         <div class="flex flex-wrap justify-between items-center gap-2">
             <div>
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Tour:</span>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400" id="turn-label">Tour:</span>
                 <span id="turn-counter" class="ml-1 font-bold">1</span>
             </div>
             <div>
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Joueur:</span>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400" id="player-label">Joueur:</span>
                 <span id="player-indicator" class="ml-1 font-bold">Vous</span>
             </div>
             <div id="game-id-display">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">ID partie:</span>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400" id="game-id-label">ID partie:</span>
                 <span id="game-id" class="ml-1 font-mono text-xs md:text-sm"></span>
             </div>
         </div>
@@ -237,8 +268,9 @@
     <!-- Zone centrale avec le paquet et les cartes jouées -->
     <div class="game-board bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 mb-4">
         <div class="flex flex-wrap justify-center gap-2 md:gap-4">
-            <div id="deck" class="card back w-16 h-24 md:w-20 md:h-32 bg-primary rounded-lg shadow-md flex items-center justify-center cursor-pointer">
-                <span class="text-white font-bold text-sm md:text-base">Pioche</span>
+            <div id="deck"
+                 class="card back w-16 h-24 md:w-20 md:h-32 bg-primary rounded-lg shadow-md flex items-center justify-center cursor-pointer">
+                <span class="text-white font-bold text-sm md:text-base" id="deck-text">Pioche</span>
             </div>
             <div id="center-cards" class="flex flex-wrap justify-center gap-2 md:gap-4"></div>
         </div>
@@ -248,16 +280,18 @@
     <div id="players-container"></div>
 
     <!-- Message de notification -->
-    <div id="notification" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 py-2 px-4 rounded-lg shadow-lg hidden z-40">
+    <div id="notification"
+         class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 py-2 px-4 rounded-lg shadow-lg hidden z-40">
         <p class="text-center text-gray-800 dark:text-gray-200"></p>
     </div>
 
     <!-- Écran de fin de partie -->
     <div id="game-over" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full">
-            <h2 class="text-2xl font-bold text-center mb-4 text-primary">Partie terminée!</h2>
+            <h2 class="text-2xl font-bold text-center mb-4 text-primary" id="game-over-title">Partie terminée!</h2>
             <p id="winner-text" class="text-xl text-center mb-6"></p>
-            <button id="back-to-home-from-game" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+            <button id="back-to-home-from-game"
+                    class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
                 Retour à l'accueil
             </button>
         </div>
@@ -267,7 +301,7 @@
 <!-- Modal de sélection de couleur -->
 <div id="color-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-xs w-full">
-        <h3 class="text-xl font-bold mb-4 text-center text-primary">Choisissez une couleur</h3>
+        <h3 class="text-xl font-bold mb-4 text-center text-primary" id="color-picker-title">Choisissez une couleur</h3>
         <div class="grid grid-cols-2 gap-4">
             <div class="bg-cardRed h-20 rounded-lg cursor-pointer color-choice" data-color="cardRed"></div>
             <div class="bg-cardBlue h-20 rounded-lg cursor-pointer color-choice" data-color="cardBlue"></div>
@@ -277,18 +311,17 @@
     </div>
 </div>
 
-<!-- Règles du jeu -->
-<div id="rules-button" class="fixed bottom-4 right-4 bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg cursor-pointer">
+<!-- Règles du jeu - Structure corrigée pour centrer correctement -->
+<div id="rules-button"
+     class="fixed bottom-4 right-4 bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg cursor-pointer">
     <span class="text-xl">?</span>
 </div>
 
 <div id="rules-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto" id="rules-content">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
+         id="rules-content">
         <!-- Le contenu sera injecté dynamiquement en fonction de la langue -->
     </div>
-    <button id="close-rules" class="mt-6 w-full bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
-        Fermer
-    </button>
 </div>
 
 <!-- Overlay de chargement -->
@@ -302,6 +335,61 @@
 <script>
     const translations = {
         fr: {
+            // Interface générale
+            appTitle: "Palettes & Symboles",
+            createGame: "Créer une partie",
+            joinGame: "Rejoindre",
+            joinGameLabel: "Rejoindre une partie",
+            gamePlaceholder: "Code de partie",
+            or: "ou",
+            newGame: "Nouvelle partie",
+            playerCount: "Nombre de joueurs",
+            twoPlayers: "2 joueurs",
+            threePlayers: "3 joueurs",
+            fourPlayers: "4 joueurs",
+            yourName: "Votre nom",
+            namePlaceholder: "Votre nom",
+            createGameBtn: "Créer la partie",
+            back: "Retour",
+            waitingPlayers: "En attente des joueurs",
+            shareCode: "Partagez ce code avec vos amis pour qu'ils puissent rejoindre la partie :",
+            copyCode: "Copier le code",
+            players: "Joueurs",
+            startGame: "Commencer la partie",
+            waitingForPlayers: "En attente de joueurs",
+            cancel: "Annuler la partie",
+            turn: "Tour:",
+            player: "Joueur:",
+            you: "Vous",
+            deckText: "Pioche",
+            cardText: "Carte",
+            gameId: "ID partie:",
+            chooseColor: "Choisissez une couleur",
+            gameOver: "Partie terminée!",
+            winnerIs: "{winner} a gagné la partie!",
+            backToHome: "Retour à l'accueil",
+            loading: "Chargement...",
+            cardPlayed: "Cette carte ne peut pas être jouée!",
+            notYourTurn: "Ce n'est pas votre tour!",
+            enterCode: "Veuillez entrer un code de partie",
+            enterName: "Veuillez entrer votre nom",
+            gameNotFound: "Partie non trouvée ou erreur de connexion",
+            errorCreatingGame: "Erreur lors de la création de la partie",
+            codeCopied: "Code copié dans le presse-papier!",
+            creator: "Créateur",
+
+            // Chat
+            chatTitle: "Chat de partie",
+            chatPlaceholder: "Votre message...",
+            chatButton: "Chat",
+            chatJoined: "a rejoint la partie",
+            chatLeft: "a quitté la partie",
+            chatStarted: "a commencé la partie",
+            chatYourTurn: "C'est votre tour",
+            chatSendError: "Impossible d'envoyer le message",
+            chatNewMessages: "nouveaux messages",
+
+            // Règles du jeu
             title: "Règles du jeu",
             rules: [
                 "Chaque joueur reçoit 5 cartes au début de la partie",
@@ -320,6 +408,61 @@
             closeButton: "Fermer"
         },
         en: {
+            // General interface
+            appTitle: "Palettes & Symbols",
+            createGame: "Create a game",
+            joinGame: "Join",
+            joinGameLabel: "Join a game",
+            gamePlaceholder: "Game code",
+            or: "or",
+            newGame: "New game",
+            playerCount: "Number of players",
+            twoPlayers: "2 players",
+            threePlayers: "3 players",
+            fourPlayers: "4 players",
+            yourName: "Your name",
+            namePlaceholder: "Your name",
+            createGameBtn: "Create game",
+            back: "Back",
+            waitingPlayers: "Waiting for players",
+            shareCode: "Share this code with your friends so they can join the game:",
+            copyCode: "Copy code",
+            players: "Players",
+            startGame: "Start game",
+            waitingForPlayers: "Waiting for players",
+            cancel: "Cancel game",
+            turn: "Turn:",
+            player: "Player:",
+            you: "You",
+            deckText: "Draw",
+            cardText: "Card",
+            gameId: "Game ID:",
+            chooseColor: "Choose a color",
+            gameOver: "Game Over!",
+            winnerIs: "{winner} has won the game!",
+            backToHome: "Back to home",
+            loading: "Loading...",
+            cardPlayed: "This card cannot be played!",
+            notYourTurn: "It's not your turn!",
+            enterCode: "Please enter a game code",
+            enterName: "Please enter your name",
+            gameNotFound: "Game not found or connection error",
+            errorCreatingGame: "Error creating the game",
+            codeCopied: "Code copied to clipboard!",
+            creator: "Creator",
+
+            // Chat
+            chatTitle: "Game Chat",
+            chatPlaceholder: "Your message...",
+            chatButton: "Chat",
+            chatJoined: "joined the game",
+            chatLeft: "left the game",
+            chatStarted: "started the game",
+            chatYourTurn: "It's your turn",
+            chatSendError: "Unable to send message",
+            chatNewMessages: "new messages",
+
+            // Game rules
             title: "Game Rules",
             rules: [
                 "Each player receives 5 cards at the beginning of the game",
@@ -338,6 +481,61 @@
             closeButton: "Close"
         },
         ar: {
+            // واجهة عامة
+            appTitle: "الألوان والرموز",
+            createGame: "إنشاء لعبة",
+            joinGame: "انضمام",
+            joinGameLabel: "انضم إلى لعبة",
+            gamePlaceholder: "رمز اللعبة",
+            or: "أو",
+            newGame: "لعبة جديدة",
+            playerCount: "عدد اللاعبين",
+            twoPlayers: "لاعبان",
+            threePlayers: "3 لاعبين",
+            fourPlayers: "4 لاعبين",
+            yourName: "اسمك",
+            namePlaceholder: "اسمك",
+            createGameBtn: "إنشاء اللعبة",
+            back: "رجوع",
+            waitingPlayers: "في انتظار اللاعبين",
+            shareCode: "شارك هذا الرمز مع أصدقائك حتى يتمكنوا من الانضمام إلى اللعبة:",
+            copyCode: "نسخ الرمز",
+            players: "اللاعبون",
+            startGame: "ابدأ اللعبة",
+            waitingForPlayers: "في انتظار اللاعبين",
+            cancel: "إلغاء اللعبة",
+            turn: "الدور:",
+            player: "اللاعب:",
+            you: "أنت",
+            deckText: "سحب",
+            cardText: "بطاقة",
+            gameId: "معرف اللعبة:",
+            chooseColor: "اختر لونًا",
+            gameOver: "انتهت اللعبة!",
+            winnerIs: "{winner} فاز باللعبة!",
+            backToHome: "العودة إلى الصفحة الرئيسية",
+            loading: "جاري التحميل...",
+            cardPlayed: "لا يمكن لعب هذه البطاقة!",
+            notYourTurn: "ليس دورك!",
+            enterCode: "الرجاء إدخال رمز اللعبة",
+            enterName: "الرجاء إدخال اسمك",
+            gameNotFound: "اللعبة غير موجودة أو خطأ في الاتصال",
+            errorCreatingGame: "خطأ في إنشاء اللعبة",
+            codeCopied: "تم نسخ الرمز إلى الحافظة!",
+            creator: "المنشئ",
+
+            // الدردشة
+            chatTitle: "دردشة اللعبة",
+            chatPlaceholder: "رسالتك...",
+            chatButton: "دردشة",
+            chatJoined: "انضم إلى اللعبة",
+            chatLeft: "غادر اللعبة",
+            chatStarted: "بدأ اللعبة",
+            chatYourTurn: "دورك الآن",
+            chatSendError: "غير قادر على إرسال الرسالة",
+            chatNewMessages: "رسائل جديدة",
+
+            // قواعد اللعبة
             title: "قواعد اللعبة",
             rules: [
                 "يتلقى كل لاعب 5 بطاقات في بداية اللعبة",
@@ -373,14 +571,18 @@
     let socket = null;
     let stompClient = null;
     let gameSubscription = null;
+    let chatSubscription = null;
 
     // Variables globales
-    const playerId = generateId();
+    let playerId = generateId();
     let playerName = "";
     let gameId = null;
     let isCreator = false;
     let isYourTurn = false;
     let currentGameState = null;
+    let unreadMessages = 0;
+    let chatMinimized = false;
+    let chatInitialized = false; // Nouvelle variable pour suivre l'initialisation du chat
 
     // Constantes
     const COLORS = ['cardRed', 'cardBlue', 'cardGreen', 'cardYellow'];
@@ -394,13 +596,7 @@
 
     // Fonction pour générer un ID unique
     function generateId() {
-        // Vérifier si on a déjà un ID stocké
-        const storedId = localStorage.getItem('palettes_symbols_player_id');
-        if (storedId) {
-            return storedId;
-        }
-
-        // Sinon, générer un nouvel ID et le stocker
+        // Générer un nouvel ID et le stocker
         const newId = Math.random().toString(36).substring(2, 10);
         localStorage.setItem('palettes_symbols_player_id', newId);
         return newId;
@@ -412,6 +608,9 @@
             screen.classList.add('hidden');
         });
         document.getElementById(screenId).classList.remove('hidden');
+
+        // Gérer la visibilité du chat en fonction de l'écran
+        manageChatVisibility(screenId);
     }
 
     // Affichage d'une notification
@@ -437,7 +636,8 @@
 
     // Connexion WebSocket
     function connectWebSocket(callback) {
-        showLoading("Connexion au serveur...");
+        const translation = translations[currentLanguage];
+        showLoading(translation.loading);
 
         socket = new SockJS('/ws-palettes-symboles');
         stompClient = Stomp.over(socket);
@@ -452,7 +652,7 @@
         }, error => {
             console.error('Erreur de connexion:', error);
             hideLoading();
-            showNotification("Erreur de connexion au serveur. Veuillez réessayer.");
+            showNotification(translation.gameNotFound);
         });
     }
 
@@ -462,6 +662,10 @@
             if (gameSubscription) {
                 gameSubscription.unsubscribe();
                 gameSubscription = null;
+            }
+            if (chatSubscription) {
+                chatSubscription.unsubscribe();
+                chatSubscription = null;
             }
             stompClient.disconnect();
         }
@@ -485,6 +689,12 @@
                 const errorData = JSON.parse(response.body);
                 showNotification(errorData.message);
             });
+
+            // S'abonner au chat de la partie
+            chatSubscription = stompClient.subscribe(`/topic/chat/${gameId}`, response => {
+                const chatMessage = JSON.parse(response.body);
+                addChatMessage(chatMessage);
+            });
         }
     }
 
@@ -497,6 +707,7 @@
         // Trouver votre joueur
         const yourPlayer = gameState.players.find(player => player.id === playerId);
         if (!yourPlayer) {
+            const translation = translations[currentLanguage];
             showNotification("Vous n'êtes plus dans la partie!");
             return;
         }
@@ -506,8 +717,14 @@
 
         // Mise à jour du joueur actuel
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-        document.getElementById('current-player').textContent = `Tour de: ${currentPlayer.name}`;
-        document.getElementById('player-indicator').textContent = isYourTurn ? "Vous" : currentPlayer.name;
+        const translation = translations[currentLanguage];
+        document.getElementById('current-player').textContent = `${translation.turn.replace(':', '')} ${currentPlayer.name}`;
+        document.getElementById('player-indicator').textContent = isYourTurn ? translation.you : currentPlayer.name;
+
+        // Notification de chat si c'est votre tour
+        if (isYourTurn) {
+            sendSystemMessage(translation.chatYourTurn);
+        }
 
         // Mise à jour des cartes centrales
         renderCenterCards(gameState.centerCards);
@@ -537,28 +754,104 @@
     // Mise à jour de l'état du jeu
     function updateGameState(gameState) {
         currentGameState = gameState;
+        const translation = translations[currentLanguage];
 
         // Si la partie vient de commencer, demander l'état du jeu personnalisé
         if (gameState.gameStarted &&
             document.getElementById('waiting-screen').classList.contains('hidden') === false) {
+
             // Demander l'état du jeu personnalisé
             fetch(`/api/games/${gameState.gameId}/player/${playerId}`)
                 .then(response => response.json())
                 .then(personalGameState => {
                     // Mettre à jour l'affichage avec l'état personnalisé
                     updateGameDisplay(personalGameState);
+
                     // Passer à l'écran de jeu
                     showScreen('game-screen');
+
+                    // Maintenant que le chat est initialisé et visible, envoyer le message système
+                    setTimeout(() => {
+                        if (chatInitialized) {
+                            sendSystemMessage(`${playerName} ${translation.chatStarted}`);
+                        } else {
+                            // Si le chat n'est pas encore initialisé, tenter l'initialisation
+                            if (initializeChat()) {
+                                sendSystemMessage(`${playerName} ${translation.chatStarted}`);
+                            } else {
+                                // Si l'initialisation échoue, réessayer une fois
+                                setTimeout(() => {
+                                    if (initializeChat()) {
+                                        sendSystemMessage(`${playerName} ${translation.chatStarted}`);
+                                    }
+                                }, 500);
+                            }
+                        }
+                    }, 500);
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    showNotification("Erreur lors de la récupération de l'état du jeu");
+                    showNotification(translation.gameNotFound);
                 });
             return;
         }
 
-        // Sinon, mettre à jour l'affichage normalement
-        updateGameDisplay(gameState);
+        // Mise à jour de l'écran
+        if (gameState.gameStarted) {
+            // Si nous sommes sur un autre écran que l'écran de jeu
+            // et que la partie est commencée, basculer vers l'écran de jeu
+            if (document.getElementById('game-screen').classList.contains('hidden')) {
+                showScreen('game-screen');
+            }
+        }
+
+        // Mise à jour des informations de base
+        document.getElementById('turn-counter').textContent = gameState.turnCounter;
+        document.getElementById('game-id').textContent = gameState.gameId;
+
+        // Trouver votre joueur
+        const yourPlayer = gameState.players.find(player => player.id === playerId);
+        if (!yourPlayer) {
+            showNotification(translation.playerNotInGame);
+            return;
+        }
+
+        // Vérifier si c'est votre tour
+        const wasYourTurn = isYourTurn;
+        isYourTurn = gameState.players[gameState.currentPlayerIndex].id === playerId;
+
+        // Si c'est devenu votre tour, envoyer une notification au chat
+        if (!wasYourTurn && isYourTurn && chatInitialized) {
+            sendSystemMessage(translation.chatYourTurn);
+        }
+
+        // Mise à jour du joueur actuel
+        const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        document.getElementById('current-player').textContent = `${translation.turn.replace(':', '')} ${currentPlayer.name}`;
+        document.getElementById('player-indicator').textContent = isYourTurn ? translation.you : currentPlayer.name;
+
+        // Mise à jour des cartes centrales
+        renderCenterCards(gameState.centerCards);
+
+        // Mise à jour des mains des joueurs
+        renderPlayersHands(gameState.players, gameState.currentPlayerIndex);
+
+        // Vérifier si la partie est terminée
+        if (gameState.gameFinished && gameState.winnerId) {
+            const winner = gameState.players.find(player => player.id === gameState.winnerId);
+            showGameOver(winner ? winner.name : "Un joueur");
+        }
+
+        // Si la partie est en attente (écran d'attente)
+        if (!gameState.gameStarted) {
+            updatePlayerList(gameState.players);
+            showScreen('waiting-screen');
+        }
+
+        // S'assurer que le chat est visible si on est sur l'écran de jeu
+        if (document.getElementById('game-screen').classList.contains('hidden') === false) {
+            manageChatVisibility('game-screen');
+        }
     }
 
     // Extraire la logique d'affichage dans une fonction séparée
@@ -570,17 +863,26 @@
         // Trouver votre joueur
         const yourPlayer = gameState.players.find(player => player.id === playerId);
         if (!yourPlayer) {
+            const translation = translations[currentLanguage];
             showNotification("Vous n'êtes plus dans la partie!");
             return;
         }
 
         // Vérifier si c'est votre tour
+        const wasYourTurn = isYourTurn;
         isYourTurn = gameState.players[gameState.currentPlayerIndex].id === playerId;
+
+        // Si c'est devenu votre tour, envoyer une notification au chat
+        if (!wasYourTurn && isYourTurn) {
+            const translation = translations[currentLanguage];
+            sendSystemMessage(translation.chatYourTurn);
+        }
 
         // Mise à jour du joueur actuel
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-        document.getElementById('current-player').textContent = `Tour de: ${currentPlayer.name}`;
-        document.getElementById('player-indicator').textContent = isYourTurn ? "Vous" : currentPlayer.name;
+        const translation = translations[currentLanguage];
+        document.getElementById('current-player').textContent = `${translation.turn.replace(':', '')} ${currentPlayer.name}`;
+        document.getElementById('player-indicator').textContent = isYourTurn ? translation.you : currentPlayer.name;
 
         // Mise à jour des cartes centrales
         renderCenterCards(gameState.centerCards);
@@ -609,10 +911,10 @@
         cardElement.dataset.symbol = card.symbol;
 
         cardElement.innerHTML = `
-                <span class="text-sm md:text-lg">${card.symbol}</span>
-                <span class="card-symbol">${card.symbol}</span>
-                <span class="text-sm md:text-lg">${card.symbol}</span>
-            `;
+            <span class="text-sm md:text-lg">${card.symbol}</span>
+            <span class="card-symbol">${card.symbol}</span>
+            <span class="text-sm md:text-lg">${card.symbol}</span>
+        `;
 
         return cardElement;
     }
@@ -644,6 +946,7 @@
 
         // Convertir en tableau pour l'affichage
         const playersToRender = Object.values(uniquePlayers);
+        const translation = translations[currentLanguage];
 
         for (let i = 0; i < playersToRender.length; i++) {
             const player = playersToRender[i];
@@ -659,9 +962,9 @@
             const nameElement = document.createElement('div');
             nameElement.className = 'font-semibold mb-2 flex justify-between items-center';
             nameElement.innerHTML = `
-                    <span>${player.name} ${isYou ? '(Vous)' : ''}</span>
-                    <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">${player.cardCount} cartes</span>
-                `;
+                <span>${player.name} ${isYou ? `(${translation.you})` : ''}</span>
+                <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">${player.cardCount} ${translation.cardText.toLowerCase()}s</span>
+            `;
 
             const cardsContainer = document.createElement('div');
             cardsContainer.className = 'flex flex-wrap gap-2 justify-center';
@@ -675,7 +978,7 @@
                     // Ajouter la possibilité de jouer seulement pour le joueur actuel si c'est son tour
                     if (isYou && isCurrentPlayer) {
                         cardElement.classList.add('cursor-pointer', 'hover:scale-105', 'transition-transform');
-                        cardElement.addEventListener('click', function() {
+                        cardElement.addEventListener('click', function () {
                             playCard(j);
                         });
                     }
@@ -687,7 +990,7 @@
                 for (let j = 0; j < player.cardCount; j++) {
                     const cardBack = document.createElement('div');
                     cardBack.className = 'card back w-16 h-24 md:w-20 md:h-32 bg-gray-500 dark:bg-gray-700 rounded-lg shadow-md flex items-center justify-center';
-                    cardBack.innerHTML = '<span class="text-white font-bold text-xs md:text-sm">Carte</span>';
+                    cardBack.innerHTML = `<span class="text-white font-bold text-xs md:text-sm">${translation.cardText}</span>`;
                     cardsContainer.appendChild(cardBack);
                 }
             }
@@ -701,7 +1004,8 @@
     // Jouer une carte
     function playCard(cardIndex) {
         if (!isYourTurn) {
-            showNotification("Ce n'est pas votre tour!");
+            const translation = translations[currentLanguage];
+            showNotification(translation.notYourTurn);
             return;
         }
 
@@ -713,7 +1017,8 @@
     // Piocher une carte
     function drawCard() {
         if (!isYourTurn) {
-            showNotification("Ce n'est pas votre tour!");
+            const translation = translations[currentLanguage];
+            showNotification(translation.notYourTurn);
             return;
         }
 
@@ -725,7 +1030,8 @@
     // Choisir une couleur
     function chooseColor(color) {
         if (!isYourTurn) {
-            showNotification("Ce n'est pas votre tour!");
+            const translation = translations[currentLanguage];
+            showNotification(translation.notYourTurn);
             return;
         }
 
@@ -738,8 +1044,12 @@
 
     // Affichage de la fin de partie
     function showGameOver(winnerName) {
-        document.getElementById('winner-text').textContent = `${winnerName} a gagné la partie!`;
+        const translation = translations[currentLanguage];
+        document.getElementById('winner-text').textContent = translation.winnerIs.replace('{winner}', winnerName);
         document.getElementById('game-over').classList.remove('hidden');
+
+        // Envoyer un message au chat pour informer de la fin de partie
+        sendSystemMessage(`${winnerName} ${translation.winnerIs.replace('{winner}', '')}`);
     }
 
     // Mise à jour de la liste des joueurs dans l'écran d'attente
@@ -748,6 +1058,7 @@
         playerList.innerHTML = '';
 
         let connectedCount = 0;
+        const translation = translations[currentLanguage];
 
         for (const player of players) {
             if (player.id) connectedCount++;
@@ -755,9 +1066,9 @@
             const playerItem = document.createElement('li');
             playerItem.className = 'flex items-center space-x-2';
             playerItem.innerHTML = `
-                    <span class="w-3 h-3 rounded-full ${player.id ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}"></span>
-                    <span>${player.name} ${player.creator ? '(Créateur)' : ''} ${player.id === playerId ? '(Vous)' : ''}</span>
-                `;
+                <span class="w-3 h-3 rounded-full ${player.id ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}"></span>
+                <span>${player.name} ${player.creator ? '(' + translation.creator + ')' : ''} ${player.id === playerId ? '(' + translation.you + ')' : ''}</span>
+            `;
             playerList.appendChild(playerItem);
         }
 
@@ -765,28 +1076,267 @@
         const startButton = document.getElementById('start-game-btn');
         if (isCreator && connectedCount >= 2) {
             startButton.disabled = false;
-            startButton.textContent = 'Commencer la partie';
+            startButton.textContent = translation.startGame;
         } else {
             startButton.disabled = true;
-            startButton.textContent = `En attente de joueurs (${connectedCount}/${players.length})`;
+            startButton.textContent = `${translation.waitingForPlayers} (${connectedCount}/${players.length})`;
         }
+    }
+
+    // Fonctions pour le chat
+
+    // Envoyer un message au chat
+    function sendChatMessage(message) {
+        if (!stompClient || !gameId) return;
+
+        const chatMessage = {
+            senderId: playerId,
+            senderName: playerName,
+            content: message,
+            timestamp: new Date().toISOString(),
+            isSystem: false
+        };
+
+        console.log("Envoi de message:", chatMessage);
+
+        try {
+            stompClient.send(`/app/chat/${gameId}`, {}, JSON.stringify(chatMessage));
+            // On ne met pas à jour l'interface car on recevra le message en retour via le websocket
+        } catch (error) {
+            const translation = translations[currentLanguage];
+            showNotification(translation.chatSendError);
+            console.error("Erreur d'envoi de message:", error);
+        }
+    }
+
+    // Envoyer un message système
+    function sendSystemMessage(message) {
+        if (!stompClient || !gameId) return;
+
+        const chatMessage = {
+            senderId: "system",
+            senderName: "System",
+            content: message,
+            timestamp: new Date().toISOString(),
+            isSystem: true
+        };
+
+        try {
+            stompClient.send(`/app/chat/${gameId}`, {}, JSON.stringify(chatMessage));
+        } catch (error) {
+            console.error("Erreur d'envoi de message système:", error);
+        }
+    }
+
+    // Ajouter un message au chat
+    function addChatMessage(message) {
+        console.log("Message reçu:", message, "Est le mien:", message.senderId === playerId);
+
+        const chatMessagesContainer = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+
+        // Mise en forme différente selon le type de message
+        if (message.isSystem) {
+            // Message système (informationnel)
+            messageDiv.className = 'p-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm text-center';
+            messageDiv.textContent = message.content;
+        } else {
+            // Message utilisateur
+            const isOwnMessage = message.senderId === playerId;
+
+            // Déterminer les classes CSS selon l'auteur du message
+            messageDiv.className = `p-2 rounded mb-2 ${isOwnMessage
+                ? 'bg-primary bg-opacity-20 ml-auto mr-2 max-w-[80%]'
+                : 'bg-gray-200 dark:bg-gray-700 ml-2 max-w-[80%]'}`;
+
+            // Créer le conteneur pour le nom de l'expéditeur
+            const nameSpan = document.createElement('div');
+            nameSpan.className = `text-xs font-semibold ${isOwnMessage
+                ? 'text-primary text-right'
+                : 'text-gray-500 dark:text-gray-400'}`;
+
+            // Utiliser le bon nom selon l'expéditeur
+            nameSpan.textContent = isOwnMessage
+                ? translations[currentLanguage].you
+                : message.senderName;
+
+            // Créer le conteneur pour le contenu du message
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'text-gray-800 dark:text-gray-200 break-words';
+            contentDiv.textContent = message.content;
+
+            // Assembler le message
+            messageDiv.appendChild(nameSpan);
+            messageDiv.appendChild(contentDiv);
+        }
+
+        // Ajouter le message au conteneur
+        chatMessagesContainer.appendChild(messageDiv);
+
+        // Scroll vers le bas pour voir les nouveaux messages
+        const chatBody = document.getElementById('chat-body');
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        // Si le chat est minimisé, incrémenter le compteur de messages non lus
+        if (chatMinimized) {
+            unreadMessages++;
+            updateUnreadMessagesIndicator();
+        }
+    }
+
+    // Mettre à jour l'indicateur de messages non lus
+    function updateUnreadMessagesIndicator() {
+        const badge = document.getElementById('chat-count-badge');
+        if (unreadMessages > 0) {
+            badge.textContent = unreadMessages;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    // Minimiser/maximiser le chat
+    function toggleChat() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatIndicator = document.getElementById('chat-indicator');
+
+        if (chatMinimized) {
+            // Maximiser le chat
+            chatContainer.classList.remove('hidden');
+            chatIndicator.classList.add('hidden');
+            chatMinimized = false;
+            unreadMessages = 0;
+            updateUnreadMessagesIndicator();
+        } else {
+            // Minimiser le chat
+            chatContainer.classList.add('hidden');
+            chatIndicator.classList.remove('hidden');
+            chatMinimized = true;
+        }
+    }
+
+    // Fonction pour initialiser le chat
+    function initializeChat() {
+        // S'assurer que tous les éléments du chat existent
+        const chatHeader = document.querySelector('.chat-header');
+        const chatMinimize = document.getElementById('chat-minimize');
+        const chatIndicator = document.getElementById('chat-indicator');
+        const chatSend = document.getElementById('chat-send');
+        const chatInput = document.getElementById('chat-input');
+
+        // Vérifier que tous les éléments nécessaires existent
+        if (!chatHeader || !chatMinimize || !chatIndicator || !chatSend || !chatInput) {
+            console.warn("Les éléments du chat ne sont pas encore disponibles, initialisation reportée");
+            return false;
+        }
+
+        const translation = translations[currentLanguage];
+
+        // Mettre à jour les textes du chat
+        document.getElementById('chat-title').textContent = translation.chatTitle;
+        chatInput.placeholder = translation.chatPlaceholder;
+        document.getElementById('chat-toggle-text').textContent = translation.chatButton;
+
+        // Événement pour la barre de titre du chat (minimisation)
+        chatHeader.addEventListener('click', function (e) {
+            if (e.target === this || e.target.closest('#chat-minimize')) {
+                toggleChat();
+            }
+        });
+
+        // Événement pour l'indicateur de chat minimisé
+        chatIndicator.addEventListener('click', function () {
+            toggleChat();
+        });
+
+        // Événement pour l'envoi de message
+        chatSend.addEventListener('click', function () {
+            sendChatFromInput();
+        });
+
+        // Envoi avec la touche Entrée
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendChatFromInput();
+            }
+        });
+
+        // Marquer l'initialisation comme réussie
+        chatInitialized = true;
+        return true;
+    }
+
+    // Envoyer un message depuis l'input
+    function sendChatFromInput() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+
+        if (message) {
+            sendChatMessage(message);
+            input.value = '';
+        }
+    }
+
+    // Traduire les éléments statiques de l'interface
+    function updateUILanguage() {
+        const translation = translations[currentLanguage];
+
+        // Mettre à jour tous les textes de l'interface
+        document.getElementById('app-title').textContent = translation.appTitle;
+        document.getElementById('game-title').textContent = translation.appTitle;
+        document.getElementById('create-game').textContent = translation.createGame;
+        document.getElementById('join-game').textContent = translation.joinGame;
+        document.getElementById('join-game-label').textContent = translation.joinGameLabel;
+        document.getElementById('join-code').placeholder = translation.gamePlaceholder;
+        document.getElementById('or-text').textContent = translation.or;
+        document.getElementById('new-game-title').textContent = translation.newGame;
+        document.getElementById('player-count-label').textContent = translation.playerCount;
+        document.getElementById('two-players').textContent = translation.twoPlayers;
+        document.getElementById('three-players').textContent = translation.threePlayers;
+        document.getElementById('four-players').textContent = translation.fourPlayers;
+        document.getElementById('your-name-label').textContent = translation.yourName;
+        document.getElementById('player-name').placeholder = translation.namePlaceholder;
+        document.getElementById('create-game-btn').textContent = translation.createGameBtn;
+        document.getElementById('back-to-home').textContent = translation.back;
+        document.getElementById('waiting-title').textContent = translation.waitingPlayers;
+        document.getElementById('share-code-text').textContent = translation.shareCode;
+        document.getElementById('copy-code').textContent = translation.copyCode;
+        document.getElementById('players-title').textContent = translation.players;
+        document.getElementById('cancel-game').textContent = translation.cancel;
+        document.getElementById('turn-label').textContent = translation.turn;
+        document.getElementById('player-label').textContent = translation.player;
+        document.getElementById('game-id-label').textContent = translation.gameId;
+        document.getElementById('deck-text').textContent = translation.deckText;
+        document.getElementById('color-picker-title').textContent = translation.chooseColor;
+        document.getElementById('game-over-title').textContent = translation.gameOver;
+        document.getElementById('back-to-home-from-game').textContent = translation.backToHome;
+        document.getElementById('loading-text').textContent = translation.loading;
+
+        // Mettre à jour les textes du chat
+        document.getElementById('chat-title').textContent = translation.chatTitle;
+        document.getElementById('chat-input').placeholder = translation.chatPlaceholder;
+        document.getElementById('chat-toggle-text').textContent = translation.chatButton;
+
+        // Mettre à jour la direction du texte selon la langue
+        document.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
     }
 
     // === Event Listeners ===
 
     // Événements pour l'écran d'accueil
-    document.getElementById('create-game').addEventListener('click', function() {
+    document.getElementById('create-game').addEventListener('click', function () {
         showScreen('setup-screen');
     });
 
-    document.getElementById('join-game').addEventListener('click', function() {
+    document.getElementById('join-game').addEventListener('click', function () {
+        const translation = translations[currentLanguage];
         const code = document.getElementById('join-code').value.trim();
         if (!code) {
-            showNotification("Veuillez entrer un code de partie");
+            showNotification(translation.enterCode);
             return;
         }
 
-        showLoading("Recherche de la partie...");
+        showLoading(translation.loading);
 
         // Appel à l'API pour récupérer les détails de la partie
         fetch(`/api/games/${code}`)
@@ -800,11 +1350,14 @@
                 gameId = gameData.id;
 
                 // Demander le nom du joueur
-                const playerName = prompt("Entrez votre nom pour rejoindre la partie:", "");
+                const playerName = prompt(translation.namePlaceholder + ":", "");
                 if (!playerName) {
                     hideLoading();
                     return;
                 }
+
+                // Sauvegarder le nom du joueur
+                window.playerName = playerName;
 
                 // Connexion WebSocket
                 connectWebSocket(() => {
@@ -814,30 +1367,41 @@
                     stompClient.send(`/app/game/${gameId}/join`, {},
                         JSON.stringify({id: playerId, name: playerName})
                     );
+
+                    // Envoyer un message de bienvenue au chat
+                    setTimeout(() => {
+                        const translation = translations[currentLanguage];
+                        sendSystemMessage(`${playerName} ${translation.chatJoined}`);
+                    }, 1000);
                 });
             })
             .catch(error => {
                 console.error('Erreur:', error);
                 hideLoading();
-                showNotification("Partie non trouvée ou erreur de connexion");
+                showNotification(translation.gameNotFound);
             });
     });
 
     // Événements pour l'écran de configuration
-    document.getElementById('back-to-home').addEventListener('click', function() {
+    document.getElementById('back-to-home').addEventListener('click', function () {
         showScreen('home-screen');
     });
 
-    document.getElementById('create-game-btn').addEventListener('click', function() {
+    document.getElementById('create-game-btn').addEventListener('click', function () {
+        // Réinitialiser l'état du jeu avant de créer une nouvelle partie
+        resetGameState();
+        const translation = translations[currentLanguage];
+
         const playerCount = parseInt(document.getElementById('player-count').value);
-        playerName = document.getElementById('player-name').value.trim() || "Joueur 1";
+        playerName = document.getElementById('player-name').value.trim() || translation.namePlaceholder;
+        window.playerName = playerName;
 
         if (!playerName) {
-            showNotification("Veuillez entrer votre nom");
+            showNotification(translation.enterName);
             return;
         }
 
-        showLoading("Création de la partie...");
+        showLoading(translation.loading);
 
         // Appel à l'API pour créer une partie
         fetch(`/api/games`, {
@@ -865,34 +1429,36 @@
                     subscribeToGame(gameId);
 
                     showScreen('waiting-screen');
+                    // Le chat sera initialisé automatiquement lors du passage à l'écran de jeu
                 });
             })
             .catch(error => {
                 console.error('Erreur:', error);
                 hideLoading();
-                showNotification("Erreur lors de la création de la partie");
+                showNotification(translation.errorCreatingGame);
             });
     });
 
     // Événements pour l'écran d'attente
-    document.getElementById('copy-code').addEventListener('click', function() {
+    document.getElementById('copy-code').addEventListener('click', function () {
+        const translation = translations[currentLanguage];
         const code = document.getElementById('game-code').textContent;
 
         navigator.clipboard.writeText(code)
             .then(() => {
-                showNotification("Code copié dans le presse-papier!");
+                showNotification(translation.codeCopied);
             })
             .catch(err => {
-                showNotification("Erreur lors de la copie: " + err);
+                showNotification(err.toString());
             });
     });
 
-    document.getElementById('cancel-game').addEventListener('click', function() {
+    document.getElementById('cancel-game').addEventListener('click', function () {
         disconnectWebSocket();
         showScreen('home-screen');
     });
 
-    document.getElementById('start-game-btn').addEventListener('click', function() {
+    document.getElementById('start-game-btn').addEventListener('click', function () {
         if (this.disabled) return;
 
         stompClient.send(`/app/game/${gameId}/start`, {},
@@ -901,30 +1467,49 @@
     });
 
     // Événements pour l'écran de jeu
-    document.getElementById('deck').addEventListener('click', function() {
+    document.getElementById('deck').addEventListener('click', function () {
         drawCard();
     });
 
-    document.getElementById('back-to-home-from-game').addEventListener('click', function() {
+    document.getElementById('back-to-home-from-game').addEventListener('click', function () {
         disconnectWebSocket();
+
+        // Réinitialiser l'ID du joueur pour éviter les conflits
+        localStorage.removeItem('palettes_symbols_player_id');
+        playerId = generateId();
+
+        // Réinitialiser complètement l'état du jeu
+        resetGameState();
+
+        // Revenir à l'écran d'accueil
         showScreen('home-screen');
     });
 
     // Événements pour la modal de couleur
     document.querySelectorAll('.color-choice').forEach(choice => {
-        choice.addEventListener('click', function() {
+        choice.addEventListener('click', function () {
             chooseColor(this.dataset.color);
         });
     });
 
+    // Remplacer les événements pour le sélecteur de langue
+    document.getElementById('language-button').addEventListener('click', function () {
+        document.getElementById('language-dropdown').classList.toggle('hidden');
+    });
+
+    // Fermer le dropdown si on clique ailleurs
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('#language-button') && !event.target.closest('#language-dropdown')) {
+            document.getElementById('language-dropdown').classList.add('hidden');
+        }
+    });
+
     // Affichage/masquage des règles
-    document.getElementById('rules-button').addEventListener('click', function() {
+    document.getElementById('rules-button').addEventListener('click', function () {
+        updateRulesContent(); // S'assurer que le contenu est à jour
         document.getElementById('rules-modal').classList.remove('hidden');
     });
 
-    document.getElementById('close-rules').addEventListener('click', function() {
-        document.getElementById('rules-modal').classList.add('hidden');
-    });
     // Variables pour la gestion des langues
     let currentLanguage = 'fr'; // Langue par défaut
 
@@ -981,14 +1566,107 @@
         rulesContent.innerHTML = html;
 
         // Réattacher l'événement pour fermer les règles
-        document.getElementById('close-rules').addEventListener('click', function() {
+        document.getElementById('close-rules').addEventListener('click', function () {
             document.getElementById('rules-modal').classList.add('hidden');
         });
     }
 
-    // Initialisation de la langue
-    function initializeLanguage() {
-        // Essayer de récupérer la langue sauvegardée
+    // Modifier l'initialisation des événements pour le bouton des règles
+    // Cette fonction est appelée une seule fois au chargement
+    function initializeRulesButton() {
+        document.getElementById('rules-button').addEventListener('click', function () {
+            updateRulesContent(); // S'assurer que le contenu est à jour
+            document.getElementById('rules-modal').classList.remove('hidden');
+        });
+    }
+
+    // Événements pour les options de langue
+    document.querySelectorAll('.language-option').forEach(option => {
+        option.addEventListener('click', function () {
+            const lang = this.dataset.lang;
+            if (translations[lang]) {
+                currentLanguage = lang;
+                localStorage.setItem('preferred_language', lang);
+                document.getElementById('current-language').textContent = lang.toUpperCase();
+
+                // Mettre à jour l'interface complète
+                updateUILanguage();
+                updateRulesContent();
+
+                document.getElementById('language-dropdown').classList.add('hidden');
+            }
+        });
+    });
+
+    // Ajouter cette fonction dans votre script
+    function resetGameState() {
+        // Cacher toutes les fenêtres modales
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('rules-modal').classList.add('hidden');
+        document.getElementById('color-modal').classList.add('hidden');
+
+        // Réinitialiser les variables du jeu
+        gameId = null;
+        isCreator = false;
+        isYourTurn = false;
+        currentGameState = null;
+
+        // Réinitialiser le chat
+        document.getElementById('chat-messages').innerHTML = '';
+        unreadMessages = 0;
+        updateUnreadMessagesIndicator();
+
+        // Afficher le chat (non minimisé par défaut)
+        document.getElementById('chat-container').classList.remove('hidden');
+        document.getElementById('chat-indicator').classList.add('hidden');
+        chatMinimized = false;
+
+        // Nettoyer les conteneurs
+        document.getElementById('center-cards').innerHTML = '';
+        document.getElementById('players-container').innerHTML = '';
+
+        // Réinitialiser les éléments d'interface
+        document.getElementById('turn-counter').textContent = '1';
+        document.getElementById('player-indicator').textContent = translations[currentLanguage].you;
+        document.getElementById('game-id').textContent = '';
+    }
+
+    // Fonction pour gérer l'affichage du chat selon l'écran actuel
+    function manageChatVisibility(screen) {
+        const chatContainer = document.getElementById('chat-container');
+        const chatIndicator = document.getElementById('chat-indicator');
+
+        // Afficher le chat uniquement pendant le jeu
+        if (screen === 'game-screen') {
+            // Initialiser le chat s'il n'est pas déjà initialisé
+            if (!chatInitialized) {
+                if (initializeChat()) {
+                    chatInitialized = true;
+                }
+            }
+
+            // Afficher soit le chat complet, soit l'indicateur, selon l'état de minimisation
+            if (chatMinimized) {
+                chatContainer.classList.add('hidden');
+                chatIndicator.classList.remove('hidden');
+            } else {
+                chatContainer.classList.remove('hidden');
+                chatIndicator.classList.add('hidden');
+            }
+        } else {
+            // Cacher complètement le chat sur les autres écrans
+            chatContainer.classList.add('hidden');
+            chatIndicator.classList.add('hidden');
+        }
+    }
+
+    // Initialisation de la langue et du chat au chargement de la page
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Initialiser le bouton des règles une seule fois
+        initializeRulesButton();
+
+        // Initialiser la langue
         const savedLanguage = localStorage.getItem('preferred_language');
 
         if (savedLanguage && translations[savedLanguage]) {
@@ -1000,44 +1678,55 @@
         // Mettre à jour l'indicateur de langue
         document.getElementById('current-language').textContent = currentLanguage.toUpperCase();
 
+        // Mettre à jour l'interface complète
+        updateUILanguage();
+
         // Mettre à jour les règles
         updateRulesContent();
-    }
 
-    // Événements pour le sélecteur de langue
-    document.getElementById('language-selector').addEventListener('click', function() {
-        document.getElementById('language-dropdown').classList.toggle('hidden');
+        // Initialiser le chat
+        initializeChat();
     });
-
-    // Fermer le dropdown si on clique ailleurs
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('#language-selector') && !event.target.closest('#language-dropdown')) {
-            document.getElementById('language-dropdown').classList.add('hidden');
-        }
-    });
-
-    // Événements pour les options de langue
-    document.querySelectorAll('.language-option').forEach(option => {
-        option.addEventListener('click', function() {
-            const lang = this.dataset.lang;
-            if (translations[lang]) {
-                currentLanguage = lang;
-                localStorage.setItem('preferred_language', lang);
-                document.getElementById('current-language').textContent = lang.toUpperCase();
-                updateRulesContent();
-                document.getElementById('language-dropdown').classList.add('hidden');
-            }
-        });
-    });
-
-    // Remplacer l'ancien événement d'ouverture des règles
-    document.getElementById('rules-button').addEventListener('click', function() {
-        updateRulesContent(); // S'assurer que le contenu est à jour
-        document.getElementById('rules-modal').classList.remove('hidden');
-    });
-
-    // Initialiser la langue au chargement de la page
-    document.addEventListener('DOMContentLoaded', initializeLanguage);
 </script>
+
+<!-- Chat flottant -->
+<div id="chat-container"
+     class="fixed right-4 bottom-20 w-64 md:w-80 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition-all duration-300 z-40 hidden">
+    <div class="chat-header bg-primary text-white px-3 py-2 flex justify-between items-center cursor-pointer">
+        <span id="chat-title">Chat de partie</span>
+        <div class="flex items-center space-x-2">
+            <button id="chat-minimize" class="focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="chat-body" class="p-3 h-60 overflow-y-auto">
+        <div id="chat-messages" class="space-y-2"></div>
+    </div>
+    <div id="chat-input-container" class="p-2 border-t border-gray-200 dark:border-gray-700 flex">
+        <input type="text" id="chat-input"
+               class="flex-1 px-3 py-1 rounded-l-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+               placeholder="Votre message...">
+        <button id="chat-send" class="bg-primary text-white px-3 py-1 rounded-r-lg hover:bg-opacity-90">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- Indicateur chat minimisé -->
+<div id="chat-indicator"
+     class="fixed right-4 bottom-20 bg-primary text-white px-3 py-1 rounded-full shadow-lg cursor-pointer hidden">
+    <span id="chat-count-badge"
+          class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full hidden">0</span>
+    <span id="chat-toggle-text">Chat</span>
+</div>
+
 </body>
 </html>
